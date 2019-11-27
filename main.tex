@@ -1,0 +1,238 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+
+\usepackage[labelfont=bf]{caption}
+
+\usepackage{tocloft}
+\renewcommand\cftsecafterpnum{\vskip8pt}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+
+%\setlength\parindent{0pt}
+
+\newcommand{\Figure}[3]{
+	\begin{figure}[!h]
+	\centering
+	\includegraphics[width=#2cm]{src/#1.png}
+	\caption{#3}
+	\label{fig:#1}
+	\end{figure}
+}
+
+\newcommand{\Figures}[4]{
+	\begin{figure}[!ht]
+	\begin{minipage}[b]{.5\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{src/#1.png}
+	\caption{#2}
+	\label{fig:#1}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{.5\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{src/#3.png}
+	\caption{#4}
+	\label{fig:#3}
+	\end{minipage}
+	\end{figure}
+}
+
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+\usepackage{graphicx}
+
+\usepackage{amssymb, amsmath, amsthm, enumitem}
+\usepackage{makecell}
+\usepackage{adjustbox}
+
+\theoremstyle{definition}
+\newtheorem*{defn}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{prop}[theorem]{Proposition}
+ 
+\theoremstyle{remark}
+\newtheorem*{note}{Note}
+
+\newcommand{\al}{\alpha}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\N}{\mathcal{N}}
+
+\usepackage{lipsum}
+
+\begin{document}
+
+\spacing{1.5}
+
+
+%% Cal millorar el títol
+
+
+\title{
+\textbf{Analysis of genetic polymorphisms from the 1000 Genomes project from different human populations}\\
+\vspace{2cm}
+Machine Learning 2
+\vspace{2cm}
+}
+
+\author{
+Víctor Adell \\
+Pau Autrand \\
+Miquel Escobar\\
+\vspace{1cm}
+}
+
+%\date{26 de Juny de 2019}
+
+\clearpage
+\maketitle
+\thispagestyle{empty}
+
+\newpage
+\clearpage
+
+
+%%%%% ----- %%%%%
+
+
+
+
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+\setlength\cftaftertoctitleskip{20pt}
+\setlength\cftbeforesecskip{10pt}
+
+\thispagestyle{plain}
+%\pagenumbering{roman}
+\setcounter{page}{2}
+
+\tableofcontents
+\newpage
+\clearpage
+
+%\setcounter{page}{1}
+%\pagenumbering{arabic}
+
+
+
+%%%%% ----- %%%%%
+
+
+\section{Introduction}
+
+FALTA TRADUIR, ALLARGAR EXPLICACIÓ DE SNP I AFEGIR REFERENCIES, Això és una cita \cite{einstein}.\\
+
+La base de dades utilitzada per aquest projecte prové del National Human Genome Research Institute, i pertanyen al 1000 Genomes Project. Aquest projecte busca mesurar les diferències genètiques per ajudar a la recerca mèdica a entendre la relació entre la variació genètica i les malalties. L’objectiu és construir un mapa de la variació genètica humana, amb una representació mínima de l’1\% de cada població humana.\\
+
+El contingut de la base de dades d’aquest projecte són polimorfismes genètics pertanyents a 389 persones de tres poblacions diferents:
+
+
+\subsection{Description of the dataset}
+
+\begin{table}[!h]
+\renewcommand{\arraystretch}{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lll}
+\textbf{Population sample} & \textbf{Population size} & \textbf{Origin} \\ \hline
+\textbf{ASW} & 87 & African ancestry in Southwest USA \\
+\textbf{CEU} & 165 & \makecell{Utah residents with Northern and Western European ancestry} \\
+\textbf{CHB} & 137 & Han Chinese in Beijing, China
+\end{tabular}
+\end{adjustbox}
+\caption{Description of size and origin of each population sample}
+\end{table}
+
+%\Figure{dataframe}{14}{First rows and columns of the dataset}
+
+\begin{table}[!h]
+\renewcommand{\arraystretch}{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+{} &  \textbf{rs9442373\_C} &  \textbf{rs1571150\_A} &  \textbf{rs4074196\_C} &  \textbf{rs2748986\_G} &  \textbf{rs28508199\_}G &  \textbf{rs6661597\_T} &  \textbf{rs2257182\_C} &  \textbf{rs12045693\_}A &  \textbf{rs2843142\_A} \\
+\hline
+\textbf{NA19919} &            0 &            2 &            0 &            1 &             1 &            1 &            0 &             0 &            1 \\
+\textbf{NA19916} &            0 &            0 &            0 &            2 &             2 &            0 &            2 &             2 &            0 \\
+\textbf{NA19835} &            1 &            2 &            1 &            1 &             2 &            0 &            2 &             2 &            1 \\
+\textbf{NA20282} &            1 &            0 &            1 &            0 &             1 &            0 &            1 &             0 &            1 \\
+\textbf{NA19703} &            0 &            2 &            2 &            1 &             2 &            0 &            2 &             1 &            0 \\
+\textbf{NA19902} &            1 &            1 &            1 &            0 &             1 &            1 &            1 &             0 &            0 \\
+\textbf{NA19901} &            1 &            2 &            1 &            1 &             1 &            0 &            2 &             0 &            1 \\
+\textbf{NA19908} &            1 &            1 &            1 &            1 &             0 &            1 &            1 &             1 &            2 \\
+\textbf{NA19914} &            0 &            0 &            0 &            2 &             2 &            0 &            0 &             0 &            0 \\
+\textbf{NA20287} &            0 &            1 &            1 &            1 &             2 &            0 &            2 &             2 &            0 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{First rows and columns of the dataset}
+\end{table}
+
+
+
+\Figure{allele_distribution}{14}{Proportion of each allele in different SNP's by population}
+
+
+\section{Classification by means of k-SVM}
+
+Comparar diferents kernels:
+
+- Alguns proposats al power point del lluis
+
+- Alguns proposats a algun article científic que trobem
+
+\subsection{Kernel 1}
+
+Proof that it is a kernel.
+
+Show kernel matrix (mark\_rect())
+
+Analyze results on test dataset.
+
+\subsection{Kernel 2}
+
+\subsection{Allele sharing distance}
+
+\section{Visualization by means of k-PCA}
+
+\section{Comparision to other (non-kernel) methods}
+Podem comparar precisió i temps, pros i cons.
+
+\section{Conclusions}
+
+\newpage
+
+\printbibliography[
+heading=bibintoc,
+title={References}
+]
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%% TABLE WITH ALLELES INSTEAD OF 0, 1, 2
+
+\begin{table}[!h]
+\renewcommand{\arraystretch}{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+{} &  \textbf{rs9442373\_C} &  \textbf{rs1571150\_A} &  \textbf{rs4074196\_C} &  \textbf{rs2748986\_G} &  \textbf{rs28508199\_}G &  \textbf{rs6661597\_T} &  \textbf{rs2257182\_C} &  \textbf{rs12045693\_}A &  \textbf{rs2843142\_A} \\
+\hline
+\textbf{NA19919} &            AA &            BB &            AA &            AB &             AB &            AB &            AA &             AA &            AB \\
+\textbf{NA19916} &            AA &            AA &            AA &            BB &             BB &            AA &            BB &             BB &            AA \\
+\textbf{NA19835} &            AB &            BB &            AB &            AB &             BB &            AA &            BB &             BB &            AB \\
+\textbf{NA20282} &            AB &            AA &            AB &            AA &             AB &            AA &            AB &             AA &            AB \\
+\textbf{NA19703} &            AA &            BB &            BB &            AB &             BB &            AA &            BB &             AB &            AA \\
+\textbf{NA19902} &            AB &            AB &            AB &            AA &             AB &            AB &            AB &             AA &            AA \\
+\textbf{NA19901} &            AB &            BB &            AB &            AB &             AB &            AA &            BB &             AA &            AB \\
+\textbf{NA19908} &            AB &            AB &            AB &            AB &             AA &            AB &            AB &             AB &            BB \\
+\textbf{NA19914} &            AA &            AA &            AA &            BB &             BB &            AA &            AA &             AA &            AA \\
+\textbf{NA20287} &            AA &            AB &            AB &            AB &             BB &            AA &            BB &             BB &            AA \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\caption{First rows and columns of the dataset}
+\end{table}
