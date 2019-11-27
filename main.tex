@@ -123,14 +123,18 @@ Miquel Escobar\\
 
 \section{Introduction}
 
-FALTA TRADUIR, ALLARGAR EXPLICACIÓ DE SNP I AFEGIR REFERENCIES, Això és una cita \cite{einstein}.\\
+FALTA TRADUIR, ALLARGAR EXPLICACIÓ DE SNP I AFEGIR REFERENCIES, Això és PER EXEMPLE UNA CITA \cite{einstein} A EINSTEIN.\\
+
+L’objectiu d’aquesta pràctica és classificar els polimorfismes genètics de la nostra base de dades en tres classes, corresponents a tres poblacions diferents. Les dades provenen de la seqüenciació del genoma d’una gran escala de gent, que és útil per veure com estan distribuides pel planeta les diferents mutacions i variacions. El que busquem és, precisament, detectar aquestes variacions i mutacions pròpies de cadascuna de les poblacions per a poder classificar totes les observacions.
+
+\subsection{Description of the dataset}
+
 
 La base de dades utilitzada per aquest projecte prové del National Human Genome Research Institute, i pertanyen al 1000 Genomes Project. Aquest projecte busca mesurar les diferències genètiques per ajudar a la recerca mèdica a entendre la relació entre la variació genètica i les malalties. L’objectiu és construir un mapa de la variació genètica humana, amb una representació mínima de l’1\% de cada població humana.\\
 
 El contingut de la base de dades d’aquest projecte són polimorfismes genètics pertanyents a 389 persones de tres poblacions diferents:
 
 
-\subsection{Description of the dataset}
 
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.5}
@@ -147,11 +151,25 @@ El contingut de la base de dades d’aquest projecte són polimorfismes genètic
 
 %\Figure{dataframe}{14}{First rows and columns of the dataset}
 
+La base de dades utilitzada per aquest projecte prové del National Human Genome Research Institute, i pertanyen al 1000 Genomes Project. Aquest projecte busca mesurar les diferències genètiques per ajudar a la recerca mèdica a entendre la relació entre la variació genètica i les malalties. L’objectiu és construir un mapa de la variació genètica humana, amb una representació mínima de l’1\% de cada població humana.
+
+El contingut de la base de dades d’aquest projecte són polimorfismes genètics pertanyents a 389 persones de tres poblacions diferents:
+
+
+A grosso modo, cada persona té 46 cromosomes, 23 provinents del pare i 23 de la mare i cada cromosoma està dividit en gens.
+
+Un polimorfisme de nucleòtid simple (o SNP) és una variant d’un gen en un nucleòtid en concret que es dona en més de l’1\% de la població. Si es rebaixa aquest mínim de l’1\% deixaria de tractar-se d’un SNP per passar a considerar-se una mutació.
+
+En la nostra base de dades s’analitzen 27,182 SNP bi-al·lèlics (és a dir, que contenen o bé el nucleòtid més habitual o bé l’estrany). Per tant les tres possibles combinacions de cada SNP en la nostra base de dades són: AA (representat amb un 0), AB (representat amb un 1), BB (representat amb un 2). Cada grup poblacional té les seves variacions més característiques, pel que dues seqüències semblants formen part de la mateixa població i dues de molt diferents no.
+
+A tall d’exemple, a mostrem els deu primers SNP’s dels deu primers individus de la base de dades, tots ells del grup ASW:
+
+
+
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.5}
 \begin{adjustbox}{width=1\textwidth}
 \begin{tabular}{lrrrrrrrrr}
-\toprule
 {} &  \textbf{rs9442373\_C} &  \textbf{rs1571150\_A} &  \textbf{rs4074196\_C} &  \textbf{rs2748986\_G} &  \textbf{rs28508199\_}G &  \textbf{rs6661597\_T} &  \textbf{rs2257182\_C} &  \textbf{rs12045693\_}A &  \textbf{rs2843142\_A} \\
 \hline
 \textbf{NA19919} &            0 &            2 &            0 &            1 &             1 &            1 &            0 &             0 &            1 \\
@@ -164,16 +182,18 @@ El contingut de la base de dades d’aquest projecte són polimorfismes genètic
 \textbf{NA19908} &            1 &            1 &            1 &            1 &             0 &            1 &            1 &             1 &            2 \\
 \textbf{NA19914} &            0 &            0 &            0 &            2 &             2 &            0 &            0 &             0 &            0 \\
 \textbf{NA20287} &            0 &            1 &            1 &            1 &             2 &            0 &            2 &             2 &            0 \\
-\bottomrule
 \end{tabular}
 \end{adjustbox}
 \caption{First rows and columns of the dataset}
 \end{table}
 
 
+Per tenir una primera intuïció de com es distribueixen les dades, pels deu primers SNP’s en concret visualitzem quin percentatge de cada població té cadascun dels al·lels:
 
 \Figure{allele_distribution}{14}{Proportion of each allele in different SNP's by population}
 
+
+Observem que INSERT BLABLA... però moltes columnes... resulten convenient els kernels en aquests casos per comparar les observacions de les bases de dades... BLABLA
 
 \section{Classification by means of k-SVM}
 
@@ -183,7 +203,17 @@ Comparar diferents kernels:
 
 - Alguns proposats a algun article científic que trobem
 
-\subsection{Kernel 1}
+
+\subsection{Dirac kernel}
+
+The Dirac or Overlap kernel is defined as
+
+\begin{equation*}
+    k_0(\mathbf{x}_i, \mathbf{x}_j) = \frac{1}{d}\sum_{k=1}^{d} \mathbb{I}_{\{x_{ik} = x_{jk}\}}
+\end{equation*}
+
+\Figure{dirac_kernel}{10}{Kernel matrix generated by Dirac's kernel}
+
 
 Proof that it is a kernel.
 
@@ -193,9 +223,14 @@ Analyze results on test dataset.
 
 \subsection{Kernel 2}
 
+\subsection{$n$-gram kernel}
+
 \subsection{Allele sharing distance}
 
+
 \section{Visualization by means of k-PCA}
+
+
 
 \section{Comparision to other (non-kernel) methods}
 Podem comparar precisió i temps, pros i cons.
