@@ -9,8 +9,8 @@ using namespace std;
 using MatrixInt = vector<vector<int>>;
 using MatrixDouble = vector<vector<double>>;
 
-const int N = 389;
-const int D = 27183;
+const int N = 500;
+const int D = 39108;
 
 
 MatrixInt load_dataframe(string filepath) {
