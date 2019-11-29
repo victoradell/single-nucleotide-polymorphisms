@@ -11,6 +11,7 @@
 \renewcommand\cftsecafterpnum{\vskip8pt}
 \usepackage{biblatex}
 \addbibresource{references.bib}
+%\bibliographystyle{ieeetr}
 
 %\setlength\parindent{0pt}
 
@@ -44,6 +45,8 @@
 \usepackage{hyperref}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
+\usepackage{bold-extra} % Enables bold font inside \texttt
+
 
 \usepackage{amssymb, amsmath, amsthm, enumitem}
 \usepackage{makecell}
@@ -57,12 +60,19 @@
 \theoremstyle{remark}
 \newtheorem*{note}{Note}
 
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}\ }}
+\usepackage{fancyvrb}
+
+\usepackage{graphicx}
+\graphicspath{ {./src/} }
+
 \newcommand{\al}{\alpha}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\N}{\mathcal{N}}
 
 \usepackage{lipsum}
+\usepackage{caption}
 
 \begin{document}
 
@@ -73,10 +83,15 @@
 
 
 \title{
-\textbf{Analysis of genetic polymorphisms from the 1000 Genomes project from different human populations}\\
-\vspace{2cm}
-Machine Learning 2
-\vspace{2cm}
+\newline
+\vspace{3cm}
+% QUE ET SEMBLA AQUEST?
+\textbf{Human ethnicities classification with kernel functions on single nucleotide polymorphisms}\\
+\vspace{1cm}
+\includegraphics[width=10cm]{UPClogo.png}
+\vspace{0.5cm}\\
+Course: Machine Learning 2
+\vfill
 }
 
 \author{
@@ -86,7 +101,6 @@ Miquel Escobar\\
 \vspace{1cm}
 }
 
-%\date{26 de Juny de 2019}
 
 \clearpage
 \maketitle
@@ -123,119 +137,352 @@ Miquel Escobar\\
 
 \section{Introduction}
 
-FALTA TRADUIR, ALLARGAR EXPLICACIÓ DE SNP I AFEGIR REFERENCIES, Això és PER EXEMPLE UNA CITA \cite{einstein} A EINSTEIN.\\
+%FALTA TRADUIR, ALLARGAR EXPLICACIÓ DE SNP I AFEGIR REFERENCIES\\
 
-L’objectiu d’aquesta pràctica és classificar els polimorfismes genètics de la nostra base de dades en tres classes, corresponents a tres poblacions diferents. Les dades provenen de la seqüenciació del genoma d’una gran escala de gent, que és útil per veure com estan distribuides pel planeta les diferents mutacions i variacions. El que busquem és, precisament, detectar aquestes variacions i mutacions pròpies de cadascuna de les poblacions per a poder classificar totes les observacions.
-
-\subsection{Description of the dataset}
+The purpose of this project is to classify the single nucleotide polymorphisms (also known as SNPs) of our dataset into $4$ classes, each corresponding to a different ethnicity. The dataset consists of humans' genome sequences, which is useful to observe variation and mutations among different ethnicities. What we are looking for is, precisely, to detect these variations and mutations of each of the ethnicities in order to classify the observations.
 
 
-La base de dades utilitzada per aquest projecte prové del National Human Genome Research Institute, i pertanyen al 1000 Genomes Project. Aquest projecte busca mesurar les diferències genètiques per ajudar a la recerca mèdica a entendre la relació entre la variació genètica i les malalties. L’objectiu és construir un mapa de la variació genètica humana, amb una representació mínima de l’1\% de cada població humana.\\
-
-El contingut de la base de dades d’aquest projecte són polimorfismes genètics pertanyents a 389 persones de tres poblacions diferents:
 
 
+\section{A brief on single nucleotide polymorphisms}
+
+This section intends to provide a succinct outline of the foundations in genetics necessary for this project. According to \textit{Genetic Mutation} in \textit{Nature Science} \cite{NatureGeneticMutation}, the haploid human genome consists of 3 billion nucleotides. While a mutation is defined as any alteration in the DNA sequence, biologists use the term \textit{single nucleotide polymorphism} (SNP) to designate \textbf{a single base pair alteration that is common in the population}.\\ 
+
+A base pair refers to two bases which form a "rung of the DNA ladder". A DNA nucleotide is made of a molecule of sugar, a molecule of phosphoric acid, and a molecule called a base. The bases are the \textit{letters} that spell out the genetic code. In DNA, the code letters are \texttt{A}, \texttt{T}, \texttt{G}, and \texttt{C}, which stand for the chemicals adenine, thymine, guanine, and cytosine, respectively. In base pairing, adenine always pairs with thymine, and guanine always pairs with cytosine \cite{GeneticsReview}.\\
+
+
+Specifically, a polymorphism is any genetic location (or locus) at which at least two different sequences are found, with each sequence present in at least 1\% of the population. Note that the term \textit{polymorphism} is generally used to refer to a normal variation, or one that does not directly cause disease. Moreover, the cutoff of at least 1\% prevalence for a variation to be classified as a polymorphism is somewhat arbitrary; if the frequency is lower than this, the \textit{allele} (i.e. the variant form of a gene) is typically regarded as a mutation \cite{MutationVSPolymorphishm}. Moreover, all common SNPs have only two alleles \cite{GeneticsWiki}.\\
+
+
+For example, two sequenced DNA fragments from different individuals, \texttt{AAGC\textbf{C}TA} to \texttt{AAGC\textbf{T}TA}, contain a difference in a single nucleotide. In this case we say that there are two alleles: C and T. This particular case extracted from \cite{GeneticsWiki} and is portrayed in the Figure \ref{fig:snp_diagram} below.\\
+
+
+\Figure{snp_diagram}{7}{Diagram of a SNP \cite{GeneticsWiki}}
+
+
+In a narrow sense, the term \textit{genotype} can be used to refer to the alleles, or variant forms of a gene, that are carried by an organism \cite{NatureGenotype}. Humans are diploid organisms, which means that they can have two possible alleles at each genetic position, or locus, with one allele inherited from each parent. Each pair of alleles represents the genotype of a specific gene.\\
+
+In the case of a \textit{single nucleotide polymorphisms}, there are two possible alleles which can be represented by the uppercase letters A and B for the sake of generality. A varied population could therefore feature three possible genotypes at this locus: AA, AB, or BB. A particular genotype is described as homozygous if it features two identical alleles and as heterozygous if the two alleles differ.\\
+
+
+On average, SNPs are found every 1,000–2,000 nucleotides in the human genome. They are important as markers, or signposts, for scientists to use when they look at populations of organisms in an attempt to find genetic changes that predispose individuals to certain traits, including disease \cite{NatureGeneticMutation}.\\
+
+Within a population, SNPs can be assigned a minor allele frequency — the lowest allele frequency at a locus that is observed in a particular population. This is simply the lesser of the two allele frequencies for single-nucleotide polymorphisms. There are variations between human populations, so a SNP allele that is common in one geographical or ethnic group may be much rarer in another \cite{GeneticsWiki}.\ \newpage
+
+
+\section{Description of the dataset}
+
+The dataset for this project has been extracted from the \textit{11 Million SNP Profiles Datasets} hosted in \textit{Harvard Dataverse} \cite{HarvardDataset}. The observations selected are those corresponding to the founding generation of each of the ethnicities, which are \textit{African American}, \textit{Estonian}, \textit{Korean}, \textit{Palestinian}.
+Each data record is labeled as follows:
+\begin{itemize}
+    \item \textbf{Id:} Unique identifier of the individual.
+    \item \textbf{Gender:} Male (M) or female(F).
+    \item \textbf{Father:} Unique identifier of the father. NA for 1st generation.
+    \item \textbf{Mother:} Unique identifier of the mother. NA for 1st generation.
+    \item \textbf{African American ethnicity:} Individual's fraction of American African ethnicity, from 0 to 1.
+    \item \textbf{Estonian ethnicity:} Individual's fraction of Estonian ethnicity, from 0 to 1.
+    \item \textbf{Korean ethnicity:} Individual's fraction of Korean ethnicity, from 0 to 1.
+    \item \textbf{Palestinian ethnicity:} Individual's fraction of Palestinian ethnicity, from 0 to 1.
+    \item \textbf{Father's ordered SNP alleles:} the alleles for each of the locus corresponding to the individual's father. Each allele is represented with just one nucleotide, as its pair is implicit (the options are \textit{CG} and \textit{AT}).
+    \item \textbf{Mother's ordered SNP alleles:} the alleles for each of the locus corresponding to the individual's mother. Each allele is represented with just one nucleotide, as its pair is implicit (the options are \textit{CG} and \textit{AT}).
+\end{itemize}
+
+
+\subsection{Data preprocessing}
+
+\subsubsection*{Data editing}
+
+The downloaded files have a total of $45000$ rows combined. 
+For computation purposes, we sampled a total of $N = 500$ observations, $\frac{N}{4} = 125$ for each ethnicity, that is, individuals with a fraction of 1 of the corresponding ethnicity. Each of the observations contains a total of $P = 39108 \times 2 = 78216$ characters, one for each locus and allel.
+The reason for which the data has been sampled is the execution cost. The computation of a kernel matrix implies the application of the kernel function on $N\times N$ pairs of values, for each of the $P$ locus, which leaves us with a total cost of $O(N^2\times P)$. In this case, $P > N$, which means that the cost is actually $O(N^3)$. Wrapping it up, this means that a greater $N$ would translate into a much slower execution due this \textit{cubic cost}, which would not be useful in the scope of this project, as it does not intend to analyze large volumes of data but instead seeks to analyze the performance of the selected kernels.
 
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.5}
-\begin{adjustbox}{width=1\textwidth}
-\begin{tabular}{lll}
-\textbf{Population sample} & \textbf{Population size} & \textbf{Origin} \\ \hline
-\textbf{ASW} & 87 & African ancestry in Southwest USA \\
-\textbf{CEU} & 165 & \makecell{Utah residents with Northern and Western European ancestry} \\
-\textbf{CHB} & 137 & Han Chinese in Beijing, China
+\centering
+%\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{llll}
+\textbf{Population sample} & \textbf{Population size} & \textbf{Female/Male} & \textbf{Origin} \\ \hline
+\textbf{EthA} & 125 & 70 / 55 & African American \\
+\textbf{EthE} & 125 & 67 / 58 & Estonian \\
+\textbf{EthK} & 125 & 63 / 62 & Korean \\
+\textbf{EthP} & 125 & 68 / 57 & Palestinian
 \end{tabular}
-\end{adjustbox}
-\caption{Description of size and origin of each population sample}
+%\end{adjustbox}
+\caption{Description of size and origin of each population sample for the randomly sampled data with $N=500$}
 \end{table}
 
-%\Figure{dataframe}{14}{First rows and columns of the dataset}
 
-La base de dades utilitzada per aquest projecte prové del National Human Genome Research Institute, i pertanyen al 1000 Genomes Project. Aquest projecte busca mesurar les diferències genètiques per ajudar a la recerca mèdica a entendre la relació entre la variació genètica i les malalties. L’objectiu és construir un mapa de la variació genètica humana, amb una representació mínima de l’1\% de cada població humana.
+\subsubsection*{Data wrangling}
+The aim of this process of data wrangling is to transform both \textit{Allele} columns into several columns, each one corresponding to the combination of the locus of the parents at a given position.
+As explained before, this combination is expressed as either $AA$, $AB$ or $BB$. For memory purposes, simplicity and because it would have to be computed later anyways, this string expression has been mapped into an integer. We used the following encoding $f$, where we defined:
+\begin{itemize}
+    \item $a_1$ as the father's allele
+    \item $a_2$ as the mother's allele
+    \item $a_n$ as the normal allele
+    \item $a_a$ as the altered allele
+\end{itemize}
+Then,
+\[
+    f(a_1,a_2) = \left\{\begin{array}{ll}
+        AA, & \text{if  } a_1=a_2=a_n\\
+        AB, & \text{if  } (a_1=a_n) \oplus (a_2=a_n)\\
+        BB, & \text{if  } a_1=a_2=a_a
+        \end{array}\right\}
+\]
+\newline
+To apply this encoding to our data, we had to define the normal and the altered allele for each locus. In fact, it could be chosen randomly and it would not have any connotations for the kernels we use, but for formality purposes we will select the most frequent allele as the \textit{normal}, and the most \textit{infrequent} as the \textit{altered}. We do this because the normal allele would be the most frequent over all humans: thus it is trivial to see that the most frequent in the dataset has the higher chance of actually being the most frequent over all humans. \footnote{It is worth noting that the encoding process is very slow, as it has to access $N\times P\times 2$ values in order to encode each of the cells, which executed in python (refer to \texttt{pre\_processing/} directory) takes some minutes. We could have used a compiled language, but considering this step has to be executed just once, it is not a critical issue.}
 
-El contingut de la base de dades d’aquest projecte són polimorfismes genètics pertanyents a 389 persones de tres poblacions diferents:
+\subsection{Some insights on the dataset}
 
 
-A grosso modo, cada persona té 46 cromosomes, 23 provinents del pare i 23 de la mare i cada cromosoma està dividit en gens.
-
-Un polimorfisme de nucleòtid simple (o SNP) és una variant d’un gen en un nucleòtid en concret que es dona en més de l’1\% de la població. Si es rebaixa aquest mínim de l’1\% deixaria de tractar-se d’un SNP per passar a considerar-se una mutació.
-
-En la nostra base de dades s’analitzen 27,182 SNP bi-al·lèlics (és a dir, que contenen o bé el nucleòtid més habitual o bé l’estrany). Per tant les tres possibles combinacions de cada SNP en la nostra base de dades són: AA (representat amb un 0), AB (representat amb un 1), BB (representat amb un 2). Cada grup poblacional té les seves variacions més característiques, pel que dues seqüències semblants formen part de la mateixa població i dues de molt diferents no.
-
-A tall d’exemple, a mostrem els deu primers SNP’s dels deu primers individus de la base de dades, tots ells del grup ASW:
-
+As an example, we show the SNP's in the 10 last positions of the first 10 individuals in the database, which are all part of the ethnic group EthA:
 
 
 \begin{table}[!h]
 \renewcommand{\arraystretch}{1.5}
 \begin{adjustbox}{width=1\textwidth}
-\begin{tabular}{lrrrrrrrrr}
-{} &  \textbf{rs9442373\_C} &  \textbf{rs1571150\_A} &  \textbf{rs4074196\_C} &  \textbf{rs2748986\_G} &  \textbf{rs28508199\_}G &  \textbf{rs6661597\_T} &  \textbf{rs2257182\_C} &  \textbf{rs12045693\_}A &  \textbf{rs2843142\_A} \\
+\begin{tabular}{lrrrrrrrrrrr}
+{} &  \textbf{r39098} &  \textbf{r39099} &  \textbf{r39100} &  \textbf{r39101} &  \textbf{r39102} &  \textbf{r39103} &  \textbf{r39104} &  \textbf{r39105} &  \textbf{r39106} &  \textbf{r39107} & \textbf{Population}\\
 \hline
-\textbf{NA19919} &            0 &            2 &            0 &            1 &             1 &            1 &            0 &             0 &            1 \\
-\textbf{NA19916} &            0 &            0 &            0 &            2 &             2 &            0 &            2 &             2 &            0 \\
-\textbf{NA19835} &            1 &            2 &            1 &            1 &             2 &            0 &            2 &             2 &            1 \\
-\textbf{NA20282} &            1 &            0 &            1 &            0 &             1 &            0 &            1 &             0 &            1 \\
-\textbf{NA19703} &            0 &            2 &            2 &            1 &             2 &            0 &            2 &             1 &            0 \\
-\textbf{NA19902} &            1 &            1 &            1 &            0 &             1 &            1 &            1 &             0 &            0 \\
-\textbf{NA19901} &            1 &            2 &            1 &            1 &             1 &            0 &            2 &             0 &            1 \\
-\textbf{NA19908} &            1 &            1 &            1 &            1 &             0 &            1 &            1 &             1 &            2 \\
-\textbf{NA19914} &            0 &            0 &            0 &            2 &             2 &            0 &            0 &             0 &            0 \\
-\textbf{NA20287} &            0 &            1 &            1 &            1 &             2 &            0 &            2 &             2 &            0 \\
+\textbf{Ind. 0}    &   2 &       0 &       1 &       2 &       0 &       2 &       0 &       0 &       1 &       0 &       EthA \\
+\textbf{Ind. 1}    &   0 &       1 &       1 &       1 &       1 &       2 &       1 &       0 &       1 &       0 &       EthA \\
+\textbf{Ind. 2}    &   1 &       1 &       1 &       2 &       0 &       2 &       0 &       1 &       1 &       0 &       EthA \\
+\textbf{Ind. 3}    &   2 &       0 &       2 &       2 &       1 &       2 &       1 &       2 &       1 &       0 &       EthA \\
+\textbf{Ind. 4}    &   0 &       0 &       0 &       2 &       1 &       2 &       1 &       0 &       1 &       1 &       EthA \\
+\textbf{Ind. 5}    &   1 &       1 &       1 &       2 &       1 &       1 &       0 &       0 &       0 &       0 &       EthA \\
+\textbf{Ind. 6}    &   1 &       1 &       2 &       2 &       1 &       2 &       1 &       0 &       2 &       0 &       EthA \\
+\textbf{Ind. 7}    &   1 &       1 &       1 &       2 &       0 &       2 &       1 &       0 &       0 &       0 &       EthA \\
+\textbf{Ind. 8}    &   2 &       1 &       2 &       1 &       2 &       1 &       0 &       0 &       0 &       0 &       EthA \\
+\textbf{Ind. 9}    &   2 &       0 &       2 &       1 &       1 &       2 &       1 &       1 &       1 &       0 &       EthA \\
+%$\vdots$    & $\vdots$    & $\vdots$   & $\vdots$   & $\vdots$   & $\vdots$   & $\vdots$   & $\vdots$   & $\vdots$   & $\vdots$    & $\vdots$   & $\vdots$ \\
 \end{tabular}
 \end{adjustbox}
-\caption{First rows and columns of the dataset}
+\caption{First rows of the last 10 single-nucleotide polymorphishms in the dataset}
 \end{table}
 
+To get familiarized with the data distribution, we show each the population's alleles fraction for each of the last 10 locus in the dataset:
 
-Per tenir una primera intuïció de com es distribueixen les dades, pels deu primers SNP’s en concret visualitzem quin percentatge de cada població té cadascun dels al·lels:
+\Figure{allele_distribution}{16}{Proportion of each allele in different SNP's by population}
 
-\Figure{allele_distribution}{14}{Proportion of each allele in different SNP's by population}
+We observe that some SNPs have clearly distribution differences between populations, which allows the distinction between them, while the locus with similar allele distributions do not contribute for the classification process.
+To wrap up the data preprocessing and exploration, and with all the knowledge acquired up to this point, we want to remark that the use of a kernel method is an adequate approach to generate a classifier. Kernel methods are exceptionally well suited for situations in which the number of dimensions (referred as $P$ in this document) is very large, specifically when the number of dimensions $P$ is much greater than the number of observations $N$ ($P >> N$). The reason for this is that the size of the kernel matrix will always be $N \times N$, regardless of the value of $P$. Consequently, when training the data, the computation cost is incredibly lower than in the case, for instance, that we trained a neural network using all $P$ dimensions.
 
+% ESTARIA BE TAMBE FER UNA COMPARATIVA ENTRE HOMES I DONES?? VOLS PROVAR-HO?? MAYBE LATER
 
-Observem que INSERT BLABLA... però moltes columnes... resulten convenient els kernels en aquests casos per comparar les observacions de les bases de dades... BLABLA
+%Observem que INSERT BLABLA... però moltes columnes... resulten convenient els kernels en aquests casos per comparar les observacions de les bases de dades... BLABLA
+
+%\newpage
+
 
 \section{Classification by means of k-SVM}
 
-Comparar diferents kernels:
+For scoring genetic similarity between two individuals, we have considered several kernels. We have started with general kernels for multivariate categorical vectors such as \textit{Dirac} and \textit{n-gram} and we have finally tried \textit{ad-hoc} ones such as the \textit{allele match kernel}.\\
 
-- Alguns proposats al power point del lluis
+The kernel matrices have been programmed in \CC for efficiency reasons and the code is available in the \texttt{build\_kernels/} folder of the repository. As for the kernel methods, we have relied on the \texttt{kernlab} package in R \cite{kernlab}.\\
 
-- Alguns proposats a algun article científic que trobem
 
 
 \subsection{Dirac kernel}
 
-The Dirac or Overlap kernel is defined as
+Let $\mathbf{x}, \mathbf{x'}$ be the genotypes of two individuals at $P$ different locus. The Dirac or overlap kernel is defined as
 
 \begin{equation*}
-    k_0(\mathbf{x}_i, \mathbf{x}_j) = \frac{1}{d}\sum_{k=1}^{d} \mathbb{I}_{\{x_{ik} = x_{jk}\}}
+    k(\mathbf{x'}, \mathbf{x'}) = \frac{1}{P}\sum_{k=1}^{P} \mathbb{I}_{\{x_k = x'_k\}},
 \end{equation*}
 
-\Figure{dirac_kernel}{10}{Kernel matrix generated by Dirac's kernel}
+where 
+
+\begin{equation*}
+    \mathbb{I}_{\{z\}} = 
+    \begin{cases}
+    1 & \text{if } z \text{ is true}\\
+    0 & \text{if } z \text{ is false}\\
+    \end{cases}
+\end{equation*}
 
 
-Proof that it is a kernel.
+Therefore, the similarity between two genotypes is then equivalent to the number of locus in which they match. To show that it is indeed a positive semi-definite kernel, we can focus on the comparison at a given locus between $x_l$ and $x'_k$. We now let $\phi_{\text{locus}}(x_k)$ be a vector of length 3 where each position is an indicator of whether $x_k$ falls into each of the alleles \textit{AA, AB, BB} \cite{GenonicSimilarity},
 
-Show kernel matrix (mark\_rect())
+\begin{equation*}
+    \phi_{\text{locus}}(x_k) = \begin{cases}
+        (1, 0, 0) & \text{if } x_k = AA \\
+        (0, 1, 0) & \text{if } x_k = AB \\
+        (0, 0, 1) & \text{if } x_k = BB \\
+    \end{cases}
+\end{equation*}
 
-Analyze results on test dataset.
+These two locus have a match score of 1 if they have the same allele and zero otherwise, which is captured by the dot product $<\phi_{\text{locus}}(x_k), \phi_{\text{locus}}(x'_k)>$ so that for a single locus, the dot product is a valid kernel. Summing these kernels across all $P$ locus and then multiplying by the positive scalar $\frac{1}{P}$ will also result in a valid kernel. Hence, the overall kernel function is a mapping between these two spaces:
+$
+%\begin{equation*}
+    \phi : \{AA, AB, BB\}^P \rightarrow \{0, 1\}^{3\cdot P}
+%\end{equation*}
+$
 
-\subsection{Kernel 2}
+The Figure \ref{fig:dirac_kernel} below displays the computed Dirac kernel matrix for our dataset composed of 500 individuals.
 
-\subsection{$n$-gram kernel}
+\Figure{dirac_kernel}{8.2}{Kernel matrix generated by Dirac kernel}
 
-\subsection{Allele sharing distance}
+We first note that the matrix is essentially composed of square sections which are approximately homogeneous in their values. These sections perfectly match up with each population of 125 individuals, which are ordered alphabetically in the dataset: \textit{EthA, EthE, EthK, EthP}. Moreover, the brightest colors in the kernel matrix, which correspond to the highest values of the kernel function are in the diagonal which means that members of the same population are more similar among them. It is also worth mentioning that the \textit{Estonian} and \textit{Palestinian} ethnicities entail the most notorious similarity with respect any other pair.\\
+
+We have divided our $500\times 500$ kernel matrix into a training set ($\frac{2}{3}$), in which we have modelled a k-SVM, and a test set ($\frac{1}{3}$). The accuracy on the test set has been of $100\%$ as the confusion matrix below depicts:
+
+\begin{figure}[!h]
+\centering
+\begin{BVerbatim}[baselinestretch=1]
+      truth
+pred   EthA EthE EthK EthP
+  EthA   41    0    0    0
+  EthE    0   41    0    0
+  EthK    0    0   41    0
+  EthP    0    0    0   44  
+\end{BVerbatim}    
+\captionof{table}[]{Confusion matrix on test dataset with Dirac kernel}
+\end{figure}
+
+
+
+\subsection{Spectrum ($n$-gram) kernel}
+
+In the context of the alleles in single nucleotide polymorphisms, we have a finite alphabet $\mathcal{A} = \{AA, AB, BB\}$. We have that an $n$-gram is a block of $n$ adjacent characters from the alphabet $\mathcal{A}$ and we define the kernel
+
+\begin{equation*}
+    k(\mathbf{x'}, \mathbf{x'}) = \sum_{s\in \mathcal{A}^n} |s\in \mathbf{x}| \cdot |s\in \mathbf{x'}|
+\end{equation*}
+
+The implicit feature map represents the genotype $\mathbf{x}$ as a multiset of its subparts of length $n$. Therefore, the dimensionality of this space is $| \mathcal{A}^n| = 3^n$. The applications of the $n$-gram kernel on genomic similarity measures have been studied by \cite{GenonicSimilarity} and we will first analyze the $1$-gram (or unigram) kernel in which we are solely comparing the distribution of the alleles \textit{AA, AB} and \textit{BB} for all possible SNPs. Its corresponding kernel matrix is displayed in the Figure \ref{fig:1_gram_kernel} below.
+
+\Figure{1_gram_kernel}{8.2}{1-gram kernel matrix}
+
+
+\newpage
+
+The results on the test set have an error rate of $26.95\%$ and its reason can be unveiled from the confusion matrix below:
+
+\begin{figure}[!h]
+\centering
+\begin{BVerbatim}[baselinestretch=1]
+      truth
+pred   EthA EthE EthK EthP
+  EthA   40    0    0    0
+  EthE    0    0    0    0
+  EthK    0    0   43    0
+  EthP    0   45    0   39
+\end{BVerbatim}    
+\captionof{table}[]{Confusion matrix on test dataset with 1-gram}
+\end{figure}
+
+Essentially, all Estonian individuals are being classified as though they were \textit{Palestinians}. In order to check if this tendency is stable for different values of $n$, we have computed the kernel matrices for the $\{3, 5, 7, 11\}$-gram: 
+
+\Figures{3_gram_kernel}{3-gram kernel matrix}{5_gram_kernel}{5-gram kernel matrix}
+
+\Figures{7_gram_kernel}{7-gram kernel matrix}{11_gram_kernel}{11-gram kernel matrix}
+
+
+As we increase $n$, a certainly surprising pattern seems to gain relevance. The Korean-Korean square has the highest values of the kernel function and two groups of rows seem to emerge, one composed by the first and third row (\textit{African American} and \textit{Korean}) and the other composed by the second and fourth row (\textit{Estonian} and \textit{Palestinian}). Moreover, this second group has the particularity that the values of the kernel function are higher when they are compared with the members of the first group with respect to themselves. This fact leads us to hypothesize that the \textit{African American} and \textit{Korean} ethnicities have a more stable distribution of alleles in consecutive SNPs.\\
+
+
+
+The results obtained on the test set of the $3$-gram kernel are identical with respect to the unigram and the rest of cases are outlined in the tables below:
+
+
+\begin{figure}[!h]
+\centering
+\begin{BVerbatim}[baselinestretch=1]
+      truth
+pred   EthA EthE EthK EthP
+  EthA   40    0    0    0
+  EthE    0   39    0    3
+  EthK    0    0   43    0
+  EthP    0    6    0   36
+\end{BVerbatim}    
+\captionof{table}[]{Confusion matrix on test dataset with 5-gram kernel (Error rate of $5.39\%$)}
+\end{figure}
+
+
+
+\begin{figure}[!h]
+\centering
+\begin{BVerbatim}[baselinestretch=1]
+      truth
+pred   EthA EthE EthK EthP
+  EthA   40    0    0    0
+  EthE    0   37    0    1
+  EthK    0    0   43    0
+  EthP    0    8    0   38
+\end{BVerbatim}    
+\captionof{table}[]{Confusion matrix on test dataset with 7-gram kernel (Error rate of $5.39\%$)}
+\end{figure}
+
+
+
+\begin{figure}[!h]
+\centering
+\begin{BVerbatim}[baselinestretch=1]
+      truth
+pred   EthA EthE EthK EthP
+  EthA   37    0    2    0
+  EthE    0   38    0    3
+  EthK    3    0   41    0
+  EthP    0    7    0   36
+\end{BVerbatim}    
+\captionof{table}[]{Confusion matrix on test dataset with 11-gram kernel (Error rate of $8.98\%$)}
+\end{figure}
+
+
+When analyzing the confusion matrices of the k-SVM, we can corroborate what we could visually see on the kernel matrices. Essentially, the only misclassifications occur between the pairs \textit{EthA-EthK} and \textit{EthE-EthP}.
+
+
+
+\newpage
+
+
+\subsection{Allele match kernel}
+
+
+The allele match kernel is suggested by \cite{KernelMeasuresGenotypes} and can be regarded as a modification of the \textit{Dirac} kernel. Essentially, for each pair of locus entails a weight of 4 if they are the same, 2 if one is a heterozygote and the other is a homozygote and 0 if they don’t share any common alleles. In this case we would have the following kernel function on a locus-per-locus basis,
+
+\begin{equation*}
+    \phi_{\text{locus}}(x_k) = \begin{cases}
+        (2, \sqrt{2}, 0) & \text{if } x_k = AA \\
+        (\sqrt{2}, \sqrt{2}, \sqrt{2}) & \text{if } x_k = AB \\
+        (0, \sqrt{2}, 2) & \text{if } x_k = BB \\
+    \end{cases}
+\end{equation*}
+
+As in the \textit{Dirac} kernel, the overall kernel function results in adding up all of the locus-per-locus comparisons and then dividing by $P$. The resulting kernel matrix is displayed in the Figure \ref{fig:allele_match_kernel} below.
+
+\Figure{allele_match_kernel}{8.2}{Allele match kernel matrix}
+
+Its appearance is certainly similar to the \textit{Dirac} kernel and we have also obtained a $100\%$ accuracy on the test set.
+
+
+
+
+\newpage
+
 
 
 \section{Visualization by means of k-PCA}
 
+In order to have some insight, we can compare a kernel with perfect accuracy (\textit{Dirac}) with respect to \textit{11-gram} kernel by visualizing the 2-dimensional kPCA of their kernel matrices.
 
 
-\section{Comparision to other (non-kernel) methods}
-Podem comparar precisió i temps, pros i cons.
+\Figures{dirac_kpca}{k-PCA with Dirac kernel}{11_gram_kpca}{k-PCA with 11-gram kernel}
+
+We observe that the 2-dimensional kPCA representation classification of the \textit{Dirac} kernel is actually linearly separable, while the 11-gram kernel clearly is not, which we could expect considering the corresponding accuracies.
+
+
+% \section{Comparision to other (non-kernel) methods}
+% SI HI HA TEMPS... Podem comparar precisió i temps, pros i cons.
+
+%\newpage
 
 \section{Conclusions}
+
+The fact that we achieved a better performance with kernels on a \textit{locus-per-locus} basis with respect to \textit{n-gram} might be an indicator that the alleles in sequences of SNPs are not highly correlated.\par
+Another observation is that the most similar ethnic groups out of the four, based on the results, are \textit{Estonian} and \textit{Palestinians}, while the most opposed are the \textit{Korean} and the \textit{African American}. This is what we could expect based on the geographic origins and on the physical appearance and attributes of each of the ethnicities, so the kernels' predicitions seem to align with our previous intuition.\par
+As a general observation on kernels, we could say that a relevant property is that it is relatively easy to obtain general knowledge from a dataset with a generic kernel, but on the other hand it might difficult to find a good kernel for specific data. In this case have seen that a generic kernel such as \textit{Dirac}'s was able to perform with perfect accuracy on the test set, even though the \textit{Allele match} kernel obtained significant better results (it can be seen from the kernel matrices representation), as it is a kernel based on previous knowledge on this specific problem, which is not always present in prediction or classification problems.
+
 
 \newpage
 
@@ -270,4 +517,45 @@ title={References}
 \end{tabular}
 \end{adjustbox}
 \caption{First rows and columns of the dataset}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%% OLD DATAFRAME TABLE
+
+
+\begin{table}[!h]
+\renewcommand{\arraystretch}{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lrrrrrrrrr}
+{} &  \textbf{rs9442373\_C} &  \textbf{rs1571150\_A} &  \textbf{rs4074196\_C} &  \textbf{rs2748986\_G} &  \textbf{rs28508199\_}G &  \textbf{rs6661597\_T} &  \textbf{rs2257182\_C} &  \textbf{rs12045693\_}A &  \textbf{rs2843142\_A} \\
+\hline
+\textbf{NA19919} &            0 &            2 &            0 &            1 &             1 &            1 &            0 &             0 &            1 \\
+\textbf{NA19916} &            0 &            0 &            0 &            2 &             2 &            0 &            2 &             2 &            0 \\
+\textbf{NA19835} &            1 &            2 &            1 &            1 &             2 &            0 &            2 &             2 &            1 \\
+\textbf{NA20282} &            1 &            0 &            1 &            0 &             1 &            0 &            1 &             0 &            1 \\
+\textbf{NA19703} &            0 &            2 &            2 &            1 &             2 &            0 &            2 &             1 &            0 \\
+\textbf{NA19902} &            1 &            1 &            1 &            0 &             1 &            1 &            1 &             0 &            0 \\
+\textbf{NA19901} &            1 &            2 &            1 &            1 &             1 &            0 &            2 &             0 &            1 \\
+\textbf{NA19908} &            1 &            1 &            1 &            1 &             0 &            1 &            1 &             1 &            2 \\
+\textbf{NA19914} &            0 &            0 &            0 &            2 &             2 &            0 &            0 &             0 &            0 \\
+\textbf{NA20287} &            0 &            1 &            1 &            1 &             2 &            0 &            2 &             2 &            0 \\
+\end{tabular}
+\end{adjustbox}
+\caption{First rows and columns of the dataset}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%% OLD POPULATION TABLE
+
+
+\begin{table}[!h]
+\renewcommand{\arraystretch}{1.5}
+\begin{adjustbox}{width=1\textwidth}
+\begin{tabular}{lll}
+\textbf{Population sample} & \textbf{Population size} & \textbf{Origin} \\ \hline
+\textbf{ASW} & 87 & African ancestry in Southwest USA \\
+\textbf{CEU} & 165 & \makecell{Utah residents with Northern and Western European ancestry} \\
+\textbf{CHB} & 137 & Han Chinese in Beijing, China
+\end{tabular}
+\end{adjustbox}
+\caption{Description of size and origin of each population sample}
 \end{table}
