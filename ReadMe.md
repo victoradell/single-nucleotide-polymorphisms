@@ -1,4 +1,4 @@
-## REPOSITORY STRUCTURE
+## Repository structure
 
 This project uses kernel methods to classify the ethnic groups given the father's and mother's allele sequences. For specific details of the implementation, refer to <b>report.pdf</b>.
 
@@ -16,7 +16,7 @@ In the **data** directory, you can find the processed data, used for modeling an
 
 
 
-## HOW TO
+## How to
 
 To reproduce the steps to obtain the results explained in the report, the files that should be on **data/raw_data** directory must be downloaded, as its total size is aroung 5GB. The four files are csvs:
 
@@ -26,4 +26,3 @@ To reproduce the steps to obtain the results explained in the report, the files 
 * [Palestinian Population Data](https://dataverse.harvard.edu/file.xhtml?persistentId=doi:10.7910/DVN/IDT8HZ/VMTYYI&version=3.0)
 
 Once downloaded, they must be copied into the directory in order for the data preprocessing scripts in the **preprocessing** folder work properly, and generate the **Processed_data.csv** file in the **data** directory.
-
