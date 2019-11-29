@@ -100,6 +100,31 @@ MatrixInt n_gram_kernel(const MatrixInt& X, int n) {
 }
 
 
+MatrixDouble allele_match(const MatrixInt& X) {
+    MatrixDouble K(N, vector<double>(N));
+    for (int i = 0; i < N; ++i) {
+        if (i % 20 == 0) {
+            cout << "Building row " << i << "..." << endl;
+        }
+        for (int j = i; j < N; ++j) {
+            int total = 0;
+            for (int it = 0; it < D; ++it) {
+                if (X[i][it] == X[j][it]) {
+                    total += 4;
+                } else if (X[i][it] == 1 or X[j][it] == 1) {
+                    total += 2;
+                }
+                // else we have AA and BB -> 0
+            }
+            K[i][j] = double(total) / D;
+            K[j][i] = K[i][j];
+        }
+    }
+    return K;
+}
+
+
+
 void write_kernel_matrix(const MatrixDouble& K, string filepath) {
     ofstream outfile(filepath);
     for (int i = 0; i < N; ++i) {
@@ -131,15 +156,6 @@ int main() {
     MatrixInt X = load_dataframe(filepath);
     cout << "Finished loading the dataset" << endl;
 
-    // MatrixInt F = n_gram_features(X, 3);
-
-    MatrixInt K = n_gram_kernel(X, 11);
-    cout << "Finished building K" << endl;
-    
-    filepath = "../kernel_matrices/11_gram.txt";
-    write_kernel_matrix(K, filepath);
-    cout << "Kernel matrix written at " << filepath << endl;
-
 
     // MatrixDouble K = dirac_kernel(X);
     // cout << "Finished building K" << endl;
@@ -147,4 +163,23 @@ int main() {
     // filepath = "../kernel_matrices/dirac.txt";
     // write_kernel_matrix(K, filepath);
     // cout << "Kernel matrix written at " << filepath << endl;
+
+
+
+    // MatrixInt F = n_gram_features(X, 3);
+    // MatrixInt K = n_gram_kernel(X, 11);
+    // cout << "Finished building K" << endl;
+    
+    // filepath = "../kernel_matrices/11_gram.txt";
+    // write_kernel_matrix(K, filepath);
+    // cout << "Kernel matrix written at " << filepath << endl;
+
+
+
+    MatrixDouble K = allele_match(X);
+    cout << "Finished building K" << endl;
+
+    filepath = "../kernel_matrices/allele_match.txt";
+    write_kernel_matrix(K, filepath);
+    cout << "Kernel matrix written at " << filepath << endl;
 }
